@@ -2,23 +2,26 @@ resolution = 20; //[10, 20, 30, 50, 100]
 $fn = resolution;
 
 margin = 0.08;
-padding = 0.2;
+padding = 0.22;
 p_w = 21;
 p_h = 51;
 p_t = 1.0;
 usb_dist_x = 8.0; // width of usb connector
-usb_h = 2.7;
+usb_h = 2.8;
 usb_ext_y = 1.3; // distance the usb connector hangs over the edge
 post_offset_y = 2.4; // center of the hoe from the pico edge
 post_dist_x = 11.4; // distance between holes
-post_sup_d = 3.0; // amount of space supporting post.
+post_sup_d = 4.0; // amount of space supporting post.
 post_r = 2.4 - 1.6; // radius of post
 bootsel_btn_y = 12.5;
-bootsel_btn_x = 15;
-space_under_pico = usb_h + margin;
+bootsel_btn_x = 14;
+led_y = 2 + 2.54;
+led_x = (p_w - post_dist_x)/2; 
+space_under_pico = usb_h + margin + padding;
 total_p_t = p_t + space_under_pico + margin;
 
 shell_t = 1.7;
+connect_t = 3 * shell_t;
 
 roundness = 3;
 
@@ -47,9 +50,10 @@ module post() {
                 //bottom
                 translate([0, 0, 0])
                     cylinder(space_under_pico, d=post_sup_d);
+                    
                 // post
                 translate([0, 0, space_under_pico-margin])
-                    cylinder(p_t+post_r, r=(.9*post_r));
+                    cylinder(p_t+post_r, r=(.95*post_r));
                 
                 // knob on top
                 translate([0, 0, space_under_pico+p_t+post_r+margin+margin])
@@ -91,16 +95,24 @@ module pico() {
 
 module pi_shell() {
     difference() {
-        rounded_plate(p_w + (2*shell_t) + (2*padding), p_h + (2*shell_t) + (2*padding), shell_t + total_p_t, roundness);
+        // Main shell
+        rounded_plate(p_w + (2*shell_t) + (2*padding), p_h + (2*shell_t) + (2*padding), shell_t + total_p_t + connect_t, roundness);
         
+        // Cut out middle
         translate([shell_t+margin, shell_t+margin, shell_t])
-            cube([p_w+(2*margin)+(2*padding), p_h+(2*margin)+(2*padding), total_p_t+margin]);
+            cube([p_w+(2*margin)+(2*padding), p_h+(2*margin)+(2*padding), total_p_t+margin+connect_t]);
         
+        // Cut out USB port
         translate([shell_t+(p_w/2)-(usb_dist_x/2)-margin+padding, 0-margin, shell_t])
             cube([usb_dist_x+margin+margin, 5.4, usb_h*2]);
-            
+        
+        // Cut out BOOTSEL button access hole
         translate([shell_t + p_w - bootsel_btn_x + padding, shell_t+bootsel_btn_y + padding, -1*margin])
             cylinder(shell_t + margin + margin, d=9);
+            
+        // Cut out hole for USB
+        translate([shell_t + padding + led_x, shell_t + led_x + padding, -1*margin])
+            cylinder(shell_t + margin + margin, d=2);
     }
     
     translate([shell_t + padding, shell_t + padding, shell_t-margin]) {
